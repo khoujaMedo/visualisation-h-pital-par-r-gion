@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+  <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header p {
+      margin: 10px 0 0 0;
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+
+    .container {
+      display: flex;
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      min-height: 700px;
+    }
+
+    .map-container {
+      flex: 1.2;
+      position: relative;
+    }
+
+    .info-panel {
+      flex: 0.8;
+      min-width: 400px;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e9ecef;
+      max-height: 700px;
+      overflow-y: auto;
+    }
+
+    .region {
+      fill: #e9ecef;
+      stroke: #ffffff;
+      stroke-width: 1.5;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .region:hover {
+      fill: #4dabf7;
+      stroke-width: 2.5;
+      filter: brightness(1.1);
+    }
+
+    .region.active {
+      fill: #339af0;
+      stroke-width: 3;
+    }
+
+    .region.selected {
+      fill: #228be6;
+      stroke: #1c7ed6;
+      stroke-width: 3;
+      filter: brightness(1.2);
+    }
+
+    .hospital-stats {
+      margin-top: 25px;
+    }
+
+    .stat-item {
+      margin: 12px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border-left: 5px solid #339af0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .stat-item:hover {
+      transform: translateX(5px);
+    }
+
+    .hospital-list {
+      max-height: 350px;
+      overflow-y: auto;
+      margin-top: 20px;
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      border: 1px solid #e9ecef;
+    }
+
+    .hospital-item {
+      padding: 12px;
+      margin: 8px 0;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #ff6b6b;
+      transition: all 0.2s ease;
+    }
+
+    .hospital-item:hover {
+      background: #e9ecef;
+      transform: translateX(3px);
+    }
+
+    h2,
+    h3,
+    h4 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      border-bottom: 3px solid #339af0;
+      padding-bottom: 10px;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #339af0;
+      color: white;
+      border-radius: 15px;
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .no-data {
+      text-align: center;
+      color: #6c757d;
+      padding: 40px 20px;
+      background: white;
+      border-radius: 8px;
+      border: 2px dashed #dee2e6;
+    }
+
+    .debug-info {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #339af0;
+    }
+
+    .stat-number {
+      font-size: 2em;
+      font-weight: bold;
+      color: #339af0;
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      font-size: 0.9em;
+      color: #6c757d;
+    }
+
+    .legend {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      margin-right: 10px;
+      border: 2px solid white;
+    }
+  </style>
+
+  <title>Carte Interactive des Hôpitaux du Maroc</title>
+</head>
+
+<body>
+  <div class="header">
+    <h1>🏥 Carte des Hôpitaux du Maroc</h1>
+    <p>Cliquez sur une région pour voir la répartition des établissements hospitaliers</p>
+  </div>
+
+  <div class="container">
+    <div class="map-container">
+      <svg></svg>
+    </div>
+    <div class="info-panel">
+      <h2>Informations sur la Région</h2>
+      <div id="region-info">
+        <div class="no-data">
+          <h3>👆 Sélectionnez une région</h3>
+          <p>Cliquez sur une région de la carte pour afficher les détails des établissements hospitaliers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+
+</html>
