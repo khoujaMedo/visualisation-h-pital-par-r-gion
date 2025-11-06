@@ -1,204 +1,27 @@
 const width = 800;
 const height = 700;
 
-const svg = d3.select('svg').attr("width", width).attr("height", height);
+const svg = d3.select('#map-svg').attr("width", width).attr("height", height);
+const treemapSvg = d3.select('#treemap-svg');
+const resumeSvg = d3.select('#resume-svg').attr("width", 400).attr("height", 600);
 
-// Données hospitalières COMPLÈTES
-const hospitalData = [
-  // Tanger-Tetouan-Al Hoceima
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "C. d'oncologie d'Al Hoceima", categorie: "CRO" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Imzouren", categorie: "HPr" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Targuist", categorie: "HPr" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Ksar El Kebir", categorie: "HPr" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Lalla Meriem", categorie: "HP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Abou Kacem Zahraoui", categorie: "HP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Assilah", categorie: "HPr" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Mohammed Vi", categorie: "HPr" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Arrazi", categorie: "HPsyR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Mohamed V", categorie: "HR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Al Kortobi", categorie: "HR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Duc De Tovar", categorie: "HR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Centre d'oncologie", categorie: "HIR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Hôpital mère enfant Mohamed VI", categorie: "HIR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Hôpital psychiatrique Mohamed VI", categorie: "CPU" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Hôpital des spécialité Mohamed VI", categorie: "HIR" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Hôpital.Civil", categorie: "HP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Errazi", categorie: "HPsyP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Ben Karrich", categorie: "HP" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Hassan II", categorie: "HPr" },
-  { region: "Tanger-Tétouan-Al Hoceïma", etablissement: "Mohammed VI", categorie: "HP" },
-
-  // Oriental
-  { region: "Oriental", etablissement: "Edderak", categorie: "HP" },
-  { region: "Oriental", etablissement: "Saidia", categorie: "HPr" },
-  { region: "Oriental", etablissement: "Driouch", categorie: "HP" },
-  { region: "Oriental", etablissement: "Hassan II", categorie: "HP" },
-  { region: "Oriental", etablissement: "Guercif", categorie: "HP" },
-  { region: "Oriental", etablissement: "Jrada", categorie: "HP" },
-  { region: "Oriental", etablissement: "Mohammed Vi", categorie: "HPr" },
-  { region: "Oriental", etablissement: "Hassani", categorie: "HP" },
-  { region: "Oriental", etablissement: "Zaio", categorie: "HPr" },
-  { region: "Oriental", etablissement: "Al Farabi", categorie: "HR" },
-  { region: "Oriental", etablissement: "Hôpital Psychiatrique", categorie: "CPU" },
-  { region: "Oriental", etablissement: "Hôpital des Spécialitéss", categorie: "HIR" },
-  { region: "Oriental", etablissement: "Hôpital Mère-Enfant", categorie: "HIR" },
-  { region: "Oriental", etablissement: "Centre d'oncoligie Hassan II", categorie: "HIR" },
-  { region: "Oriental", etablissement: "HPr Laayoune Sidi Mellouk", categorie: "HPr" },
-  { region: "Oriental", etablissement: "Taourirt", categorie: "HP" },
-
-  // Fès-Meknès
-  { region: "Fès-Meknès", etablissement: "Sidi Said", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Pagnon", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Moulay Ismail", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Centre d'oncologie", categorie: "CRO" },
-  { region: "Fès-Meknès", etablissement: "Marche Verte", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "S. Ahmed B. Driss Missouri", categorie: "HPr" },
-  { region: "Fès-Meknès", etablissement: "Prince My Hassan", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Al Ghassani", categorie: "HR" },
-  { region: "Fès-Meknès", etablissement: "Ibn Al Baitar", categorie: "HR" },
-  { region: "Fès-Meknès", etablissement: "Hôpital d'Oncologie", categorie: "HIR" },
-  { region: "Fès-Meknès", etablissement: "Hôpital des spécialités", categorie: "HIR" },
-  { region: "Fès-Meknès", etablissement: "Hôpital Mère-Enfant", categorie: "HIR" },
-  { region: "Fès-Meknès", etablissement: "Omar Drissi", categorie: "HIR" },
-  { region: "Fès-Meknès", etablissement: "Ibn Al Khatib", categorie: "HR" },
-  { region: "Fès-Meknès", etablissement: "Ibn Al Hassan", categorie: "CPU" },
-  { region: "Fès-Meknès", etablissement: "20 Aout (Azrou)", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Hassan II", categorie: "HPr" },
-  { region: "Fès-Meknès", etablissement: "Taounate", categorie: "HP" },
-  { region: "Fès-Meknès", etablissement: "Ibn Baja", categorie: "HP" },
-
-  // Rabat-Salé-Kénitra
-  { region: "Rabat-Salé-Kénitra", etablissement: "Al Idrissi", categorie: "HP" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Zoubir Skirej", categorie: "HPr" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Khémisset", categorie: "HP" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Roummani", categorie: "HPr" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Tiflet", categorie: "HPr" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Ibn Sina", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Hôpital Des Spécialités", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Maternité Souissi", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Hôpital D'enfants", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Maternité Orangers", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Med Ben Abdellah", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "My Youssef", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Moulay Youssef (Ancien hôpital de Rabat)", categorie: "HR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "El Ayachi", categorie: "HIR" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Moulay Abdellah (Hôp.préféctoral)", categorie: "HP" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Arrazi", categorie: "CPU" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Jorf Elmelha", categorie: "HPr" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Sidi Kacem", categorie: "HP" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Sidi Slimane", categorie: "HP" },
-  { region: "Rabat-Salé-Kénitra", etablissement: "Princesse Lalla Aicha (Ancien Sidi Lahcen)", categorie: "HP" },
-
-  // Béni Mellal-Khénifra
-  { region: "Béni Mellal-Khénifra", etablissement: "Haut Atlas Central", categorie: "HP" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Demnate", categorie: "HPr" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Beni Mellal", categorie: "HR" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Moulay Ismail", categorie: "HPr" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Beni Mellal", categorie: "CRO" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Fquih Ben Salah", categorie: "HP" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Souk Sebt", categorie: "HPr" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Khenifra", categorie: "HP" },
-  { region: "Béni Mellal-Khénifra", etablissement: "M'Rirt", categorie: "HPr" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Mohamed VI", categorie: "HPr" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Hassan II", categorie: "HP" },
-  { region: "Béni Mellal-Khénifra", etablissement: "Oued.Zem", categorie: "HPr" },
-
-  // Casablanca-Settat
-  { region: "Casablanca-Settat", etablissement: "Benslimane (Hassan II)", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Berrchid", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Errazi", categorie: "HPsyP" },
-  { region: "Casablanca-Settat", etablissement: "Azemmour", categorie: "HPr" },
-  { region: "Casablanca-Settat", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Mediouna", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Tit Mellil", categorie: "HPsyP" },
-  { region: "Casablanca-Settat", etablissement: "My Abdellah", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Bouskoura", categorie: "HPr" },
-  { region: "Casablanca-Settat", etablissement: "Prince My Hassan", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Ben Ahmed", categorie: "HPr" },
-  { region: "Casablanca-Settat", etablissement: "Hassan II", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Sidi Bennour", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Zmamra", categorie: "HPr" },
-  { region: "Casablanca-Settat", etablissement: "20 Aout 1953", categorie: "HIR" },
-  { region: "Casablanca-Settat", etablissement: "Ibn Rochd", categorie: "HIR" },
-  { region: "Casablanca-Settat", etablissement: "Hôpital D'enfants", categorie: "HIR" },
-  { region: "Casablanca-Settat", etablissement: "My Youssef", categorie: "HR" },
-  { region: "Casablanca-Settat", etablissement: "Mohamed Baouafi", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "El Hassani", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Centre de Léprologie", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Mohamed Sekkat", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Al Mansour", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "HPr Sidi Moumen", categorie: "HPr" },
-  { region: "Casablanca-Settat", etablissement: "Ben Msick", categorie: "HP" },
-  { region: "Casablanca-Settat", etablissement: "Sidi Othmane", categorie: "HP" },
-
-  // Marrakech-Safi
-  { region: "Marrakech-Safi", etablissement: "Mohammed VI", categorie: "HP" },
-  { region: "Marrakech-Safi", etablissement: "Mohamed Vi", categorie: "HP" },
-  { region: "Marrakech-Safi", etablissement: "Assalama", categorie: "HP" },
-  { region: "Marrakech-Safi", etablissement: "Hôpital psychiatrique", categorie: "HPsyP" },
-  { region: "Marrakech-Safi", etablissement: "Princesse Lalla Khadija", categorie: "HPr" },
-  { region: "Marrakech-Safi", etablissement: "Sidi Med Ben Abdellah", categorie: "HP" },
-  { region: "Marrakech-Safi", etablissement: "Ibn Tofeil", categorie: "HIR" },
-  { region: "Marrakech-Safi", etablissement: "Ibn Nafis", categorie: "CPU" },
-  { region: "Marrakech-Safi", etablissement: "Hopital Mère-Enfant", categorie: "HIR" },
-  { region: "Marrakech-Safi", etablissement: "Centre d'Hématologie Oncologie", categorie: "HIR" },
-  { region: "Marrakech-Safi", etablissement: "Arrazi", categorie: "HIR" },
-  { region: "Marrakech-Safi", etablissement: "Ibn Zohr", categorie: "HR" },
-  { region: "Marrakech-Safi", etablissement: "El Antaki", categorie: "HR" },
-  { region: "Marrakech-Safi", etablissement: "Mhamid", categorie: "HPr" },
-  { region: "Marrakech-Safi", etablissement: "Charifa", categorie: "HPr" },
-  { region: "Marrakech-Safi", etablissement: "Saada", categorie: "HPsyR" },
-  { region: "Marrakech-Safi", etablissement: "Benguerir", categorie: "HP" },
-  { region: "Marrakech-Safi", etablissement: "Mohamed V", categorie: "HP" },
-  { region: "Marrakech-Safi", etablissement: "Aisha", categorie: "HPr" },
-  { region: "Marrakech-Safi", etablissement: "Lalla Hasna", categorie: "HP" },
-
-  // Drâa-Tafilalet
-  { region: "Drâa-Tafilalet", etablissement: "Sghiri Houmman I Ben Maati", categorie: "HPr" },
-  { region: "Drâa-Tafilalet", etablissement: "My Ali Cherif", categorie: "HR" },
-  { region: "Drâa-Tafilalet", etablissement: "Hôpital Amir Soultan Ibn Abdelaziz", categorie: "HP" },
-  { region: "Drâa-Tafilalet", etablissement: "20 Aout (Goulmima)", categorie: "HPr" },
-  { region: "Drâa-Tafilalet", etablissement: "Midelt", categorie: "HP" },
-  { region: "Drâa-Tafilalet", etablissement: "HPr Rich", categorie: "HPr" },
-  { region: "Drâa-Tafilalet", etablissement: "Sidi Hssain Bencer", categorie: "HP" },
-  { region: "Drâa-Tafilalet", etablissement: "Bougafer", categorie: "HP" },
-  { region: "Drâa-Tafilalet", etablissement: "HPr Kalaat M'gouna", categorie: "HPr" },
-  { region: "Drâa-Tafilalet", etablissement: "Tinghir", categorie: "HP" },
-  { region: "Drâa-Tafilalet", etablissement: "Ed-Derrak", categorie: "HP" },
-
-  // Souss-Massa
-  { region: "Souss-Massa", etablissement: "Hassan II", categorie: "HR" },
-  { region: "Souss-Massa", etablissement: "C. d'Oncologie d'Agadir", categorie: "CRO" },
-  { region: "Souss-Massa", etablissement: "Mokhtar Soussi", categorie: "HP" },
-  { region: "Souss-Massa", etablissement: "Inezgane", categorie: "HP" },
-  { region: "Souss-Massa", etablissement: "Oulad Teima", categorie: "HPr" },
-  { region: "Souss-Massa", etablissement: "Mokhtar Es-Soussi", categorie: "HP" },
-  { region: "Souss-Massa", etablissement: "Tata", categorie: "HP" },
-  { region: "Souss-Massa", etablissement: "Hassan 1er", categorie: "HP" },
-  { region: "Souss-Massa", etablissement: "Houmman El Fatouaki", categorie: "HP" },
-
-  // Guelmim-Oued Noun
-  { region: "Guelmim-Oued Noun", etablissement: "Assa", categorie: "HP" },
-  { region: "Guelmim-Oued Noun", etablissement: "Bouizakarne", categorie: "HPr" },
-  { region: "Guelmim-Oued Noun", etablissement: "Guelmim", categorie: "HR" },
-  { region: "Guelmim-Oued Noun", etablissement: "Sidi Ifni", categorie: "HP" },
-  { region: "Guelmim-Oued Noun", etablissement: "Tan Tan", categorie: "HP" },
-
-  // Laâyoune-Sakia El Hamra
-  { region: "Laâyoune-Sakia El Hamra", etablissement: "Boujdour", categorie: "HP" },
-  { region: "Laâyoune-Sakia El Hamra", etablissement: "Es-semara", categorie: "HP" },
-  { region: "Laâyoune-Sakia El Hamra", etablissement: "My Hassan Ben El Mehdi", categorie: "HR" },
-  { region: "Laâyoune-Sakia El Hamra", etablissement: "Hassan II", categorie: "HR" },
-  { region: "Laâyoune-Sakia El Hamra", etablissement: "Laayoune", categorie: "CRO" },
-
-  // Dakhla-Oued Ed-Dahab
-  { region: "Dakhla-Oued Ed-Dahab", etablissement: "Dakhla", categorie: "HR" }
-];
+// Chargement des données depuis CSV
+let hospitalData = [];
+d3.csv('hospitals.csv').then(data => {
+  hospitalData = data;
+  console.log('Données CSV chargées:', hospitalData.length, 'entrées');
+  initMap();
+  initTreemap();
+  initResumeViz();
+}).catch(error => {
+  console.error('Erreur chargement CSV:', error);
+  d3.select('#region-info').html(`
+    <div class="no-data">
+      <h3>❌ Erreur de chargement CSV</h3>
+      <p>Vérifiez que hospitals.csv est présent.</p>
+    </div>
+  `);
+});
 
 // Mapping des noms de régions
 const regionNameMapping = {
@@ -229,16 +52,26 @@ const categoryLegend = {
   "CPU": "Centre Psychiatrique Universitaire"
 };
 
+// Échelle de couleurs pour les catégories
+const categoryColors = {
+  "HP": "#4dabf7",
+  "HR": "#f0932b",
+  "HIR": "#eb4d4b",
+  "HPr": "#6ab04c",
+  "HPsyP": "#a55eea",
+  "CRO": "#fd79a8",
+  "HPsyR": "#f1c40f",
+  "CPU": "#e17055"
+};
+
 // Fonction pour trouver le nom de région correspondant
 function findMatchingRegion(regionNameFromMap) {
   console.log(`Recherche pour: "${regionNameFromMap}"`);
 
-  // Vérifier d'abord le mapping direct
   if (regionNameMapping[regionNameFromMap]) {
     return regionNameMapping[regionNameFromMap];
   }
 
-  // Nettoyer le nom
   const cleanName = regionNameFromMap
     .toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -246,7 +79,6 @@ function findMatchingRegion(regionNameFromMap) {
     .replace(/[^\w\s]/g, '')
     .trim();
 
-  // Chercher dans les données
   for (const hospital of hospitalData) {
     const cleanDataName = hospital.region
       .toLowerCase()
@@ -260,7 +92,6 @@ function findMatchingRegion(regionNameFromMap) {
     }
   }
 
-  // Correspondance partielle
   const partialMatches = {
     'oriental': 'Oriental',
     'loriental': 'Oriental',
@@ -299,7 +130,6 @@ function getRegionStats(regionName) {
     return null;
   }
 
-  // Compter par catégorie
   const categoryCount = {};
   regionHospitals.forEach(hospital => {
     categoryCount[hospital.categorie] = (categoryCount[hospital.categorie] || 0) + 1;
@@ -329,13 +159,12 @@ function showRegionInfo(regionName, regionStats) {
           La région "${regionName}" n'a pas été trouvée dans la base de données.
         </div>
       `);
+    updateResumeViz(null);
     return;
   }
 
-  // Titre de la région
   infoPanel.append('h3').text(regionName);
 
-  // Statistiques en grille
   const statsGrid = infoPanel.append('div').attr('class', 'stats-grid');
 
   statsGrid.append('div')
@@ -353,7 +182,6 @@ function showRegionInfo(regionName, regionStats) {
       <div class="stat-label">Types de Catégories</div>
     `);
 
-  // Détails par catégorie
   const statsDiv = infoPanel.append('div').attr('class', 'hospital-stats');
   statsDiv.append('h4').text('Répartition par Catégorie');
 
@@ -367,7 +195,6 @@ function showRegionInfo(regionName, regionStats) {
       `);
   });
 
-  // Liste des hôpitaux
   const hospitalsDiv = infoPanel.append('div').attr('class', 'hospital-list');
   hospitalsDiv.append('h4').text(`Liste des Établissements (${regionStats.total})`);
 
@@ -375,7 +202,7 @@ function showRegionInfo(regionName, regionStats) {
     hospitalsDiv.append('div')
       .attr('class', 'hospital-item')
       .html(`
-        <div style="display: flex; justify-content: between; align-items: start;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div style="flex: 1;">
             <strong>${hospital.etablissement}</strong>
           </div>
@@ -386,107 +213,441 @@ function showRegionInfo(regionName, regionStats) {
         </div>
       `);
   });
+
+  updateResumeViz(regionStats);
 }
 
-// Chargement de la carte
-d3.json('https://cdn.jsdelivr.net/npm/morocco-map/data/regions.json')
-  .then(data => {
-    const regions = topojson.feature(data, data.objects.regions);
+// Initialisation de la carte
+function initMap() {
+  d3.json('https://cdn.jsdelivr.net/npm/morocco-map/data/regions.json')
+    .then(data => {
+      const regions = topojson.feature(data, data.objects.regions);
 
-    const projection = d3.geoMercator().fitSize([width, height], regions);
-    const pathGenerator = d3.geoPath().projection(projection);
+      const projection = d3.geoMercator().fitSize([width, height], regions);
+      const pathGenerator = d3.geoPath().projection(projection);
 
-    // Créer les paths pour chaque région
-    const regionPaths = svg.selectAll('path')
-      .data(regions.features)
-      .enter().append('path')
-      .attr('class', 'region')
-      .attr('d', pathGenerator)
-      .on('mouseover', function (d, i) {
-        d3.select(this).classed('active', true);
-      })
-      .on('mouseout', function (d, i) {
-        if (!d3.select(this).classed('selected')) {
-          d3.select(this).classed('active', false);
-        }
-      })
-      .on('click', function (d, i) {
-        // Retirer la sélection précédente
-        svg.selectAll('.region').classed('selected', false);
+      const regionPaths = svg.selectAll('path')
+        .data(regions.features)
+        .enter().append('path')
+        .attr('class', 'region')
+        .attr('d', pathGenerator)
+        .on('mouseover', function (d, i) {
+          d3.select(this).classed('active', true);
+        })
+        .on('mouseout', function (d, i) {
+          if (!d3.select(this).classed('selected')) {
+            d3.select(this).classed('active', false);
+          }
+        })
+        .on('click', function (d, i) {
+          svg.selectAll('.region').classed('selected', false);
+          d3.select(this).classed('selected', true);
 
-        // Sélectionner la nouvelle région
-        d3.select(this).classed('selected', true);
+          const regionNameAr = d.properties['name:ar'];
+          const regionNameEn = d.properties['name:en'];
+          const regionNameFr = d.properties['name:fr'];
 
-        const regionNameAr = d.properties['name:ar'];
-        const regionNameEn = d.properties['name:en'];
-        const regionNameFr = d.properties['name:fr'];
+          let regionStats = getRegionStats(regionNameEn);
+          if (!regionStats) {
+            regionStats = getRegionStats(regionNameFr);
+          }
 
-        // Essayer d'abord avec le nom anglais, puis français
-        let regionStats = getRegionStats(regionNameEn);
-        if (!regionStats) {
-          regionStats = getRegionStats(regionNameFr);
-        }
+          showRegionInfo(regionNameAr, regionStats);
+        });
 
-        showRegionInfo(regionNameAr, regionStats);
-      });
+      // Légende de la carte
+      const legend = svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(20, 20)`);
 
-    // Ajouter la légende
-    const legend = svg.append('g')
-      .attr('class', 'legend')
-      .attr('transform', `translate(20, 20)`);
-
-    legend.append('rect')
-      .attr('width', 220)
-      .attr('height', 140)
-      .attr('fill', 'white')
-      .attr('stroke', '#dee2e6')
-      .attr('rx', 8)
-      .style('opacity', 0.95);
-
-    legend.append('text')
-      .attr('x', 15)
-      .attr('y', 25)
-      .text('Légende Interactive')
-      .style('font-weight', 'bold')
-      .style('font-size', '14px');
-
-    // Éléments de légende
-    const legendItems = [
-      { color: '#e9ecef', text: 'Région normale' },
-      { color: '#4dabf7', text: 'Survol' },
-      { color: '#228be6', text: 'Sélectionnée' }
-    ];
-
-    legendItems.forEach((item, i) => {
       legend.append('rect')
-        .attr('x', 15)
-        .attr('y', 40 + i * 25)
-        .attr('width', 15)
-        .attr('height', 15)
-        .attr('fill', item.color)
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 2);
+        .attr('width', 220)
+        .attr('height', 140)
+        .attr('fill', 'white')
+        .attr('stroke', '#dee2e6')
+        .attr('rx', 8)
+        .style('opacity', 0.95);
 
       legend.append('text')
-        .attr('x', 35)
-        .attr('y', 52 + i * 25)
-        .text(item.text)
-        .style('font-size', '12px');
+        .attr('x', 15)
+        .attr('y', 25)
+        .text('Légende Interactive')
+        .style('font-weight', 'bold')
+        .style('font-size', '14px');
+
+      const legendItems = [
+        { color: '#e9ecef', text: 'Région normale' },
+        { color: '#4dabf7', text: 'Survol' },
+        { color: '#228be6', text: 'Sélectionnée' }
+      ];
+
+      legendItems.forEach((item, i) => {
+        legend.append('rect')
+          .attr('x', 15)
+          .attr('y', 40 + i * 25)
+          .attr('width', 15)
+          .attr('height', 15)
+          .attr('fill', item.color)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 2);
+
+        legend.append('text')
+          .attr('x', 35)
+          .attr('y', 52 + i * 25)
+          .text(item.text)
+          .style('font-size', '12px');
+      });
+
+      legend.append('text')
+        .attr('x', 15)
+        .attr('y', 125)
+        .text('Cliquez pour voir les détails')
+        .style('font-size', '11px')
+        .style('fill', '#6c757d');
+    })
+    .catch(error => {
+      console.error('Erreur lors du chargement de la carte:', error);
+      d3.select('#region-info').html(`
+        <div class="no-data">
+          <h3>❌ Erreur de chargement</h3>
+          <p>Impossible de charger la carte. Vérifiez votre connexion internet.</p>
+        </div>
+      `);
+    });
+}
+
+// Initialisation du Treemap - VERSION AMÉLIORÉE
+function initTreemap() {
+  // Agrégation des données par région pour le treemap
+  const regionCounts = {};
+  hospitalData.forEach(h => {
+    regionCounts[h.region] = (regionCounts[h.region] || 0) + 1;
+  });
+
+  const treemapData = {
+    name: "Racine",
+    children: Object.entries(regionCounts).map(([region, count]) => ({
+      name: region,
+      value: count,
+      region: region
+    }))
+  };
+
+  // Dimensions dynamiques basées sur le conteneur
+  const container = d3.select('.treemap-container');
+  const width = container.node().getBoundingClientRect().width - 40;
+  const height = 350;
+
+  const treemapSvg = d3.select('#treemap-svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  // Effacer le contenu précédent
+  treemapSvg.html('');
+
+  const treemap = d3.treemap()
+    .size([width, height])
+    .tile(d3.treemapSquarify)
+    .round(true)
+    .padding(1);
+
+  const root = d3.hierarchy(treemapData)
+    .sum(d => d.value)
+    .sort((a, b) => b.value - a.value);
+
+  treemap(root);
+
+  // Échelle de couleurs améliorée
+  const colorScale = d3.scaleOrdinal()
+    .domain(Object.keys(regionCounts))
+    .range(d3.schemeSet3);
+
+  // Tooltip
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "treemap-tooltip")
+    .style("opacity", 0);
+
+  // Création des groupes pour chaque feuille
+  const leaf = treemapSvg.selectAll('g')
+    .data(root.leaves())
+    .enter().append('g')
+    .attr('transform', d => `translate(${d.x0},${d.y0})`)
+    .style('cursor', 'pointer')
+    .on('click', function (event, d) {
+      // Récupérer les stats de la région cliquée
+      const regionStats = getRegionStats(d.data.region);
+      if (regionStats) {
+        // Mettre à jour l'affichage des informations
+        showRegionInfo(d.data.region, regionStats);
+
+        // Mettre en évidence la région sur la carte
+        highlightRegionOnMap(d.data.region);
+      }
     });
 
-    legend.append('text')
-      .attr('x', 15)
-      .attr('y', 125)
-      .text('Cliquez pour voir les détails')
-      .style('font-size', '11px')
-      .style('fill', '#6c757d');
-  })
-  .catch(error => {
-    console.error('Erreur lors du chargement de la carte:', error);
-    d3.select('#region-info').html(`
-      <div class="no-data">
-        <h3>❌ Erreur de chargement</h3>
-        <p>Impossible de charger la carte. Vérifiez votre connexion internet.</p>
-      </div>
-    `);
+  // Rectangles du treemap
+  leaf.append('rect')
+    .attr('class', 'treemap-rect')
+    .attr('width', d => Math.max(0, d.x1 - d.x0))
+    .attr('height', d => Math.max(0, d.y1 - d.y0))
+    .style('fill', d => colorScale(d.data.name))
+    .style('opacity', 0.8)
+    .on('mouseover', function (event, d) {
+      d3.select(this)
+        .style('opacity', 1)
+        .style('stroke', '#333')
+        .style('stroke-width', '2px');
+
+      tooltip.style('opacity', 1)
+        .html(`
+          <strong>${d.data.name}</strong><br>
+          Hôpitaux: ${d.data.value}<br>
+          <em>Cliquez pour voir les détails</em>
+        `)
+        .style('left', (event.pageX + 15) + 'px')
+        .style('top', (event.pageY - 15) + 'px');
+    })
+    .on('mouseout', function (event, d) {
+      d3.select(this)
+        .style('opacity', 0.8)
+        .style('stroke', 'none');
+
+      tooltip.style('opacity', 0);
+    });
+
+  // Texte dans les rectangles - version améliorée
+  leaf.append('text')
+    .attr('class', 'treemap-text')
+    .attr('x', d => (d.x1 - d.x0) / 2)
+    .attr('y', d => (d.y1 - d.y0) / 2)
+    .attr('text-anchor', 'middle')
+    .attr('dy', '0.35em')
+    .style('font-size', d => {
+      const area = (d.x1 - d.x0) * (d.y1 - d.y0);
+      const baseSize = Math.sqrt(area) / 15;
+      return Math.max(8, Math.min(12, baseSize)) + 'px';
+    })
+    .style('fill', 'white')
+    .style('font-weight', 'bold')
+    .style('pointer-events', 'none')
+    .style('text-shadow', '1px 1px 2px rgba(0,0,0,0.7)')
+    .text(d => {
+      const rectWidth = d.x1 - d.x0;
+      const rectHeight = d.y1 - d.y0;
+
+      if (rectWidth > 60 && rectHeight > 25) {
+        return `${d.data.value}`;
+      }
+      return '';
+    });
+
+  // Labels des régions (noms courts)
+  leaf.append('text')
+    .attr('class', 'treemap-text')
+    .attr('x', d => (d.x1 - d.x0) / 2)
+    .attr('y', d => (d.y1 - d.y0) / 2 - 10)
+    .attr('text-anchor', 'middle')
+    .style('font-size', d => {
+      const area = (d.x1 - d.x0) * (d.y1 - d.y0);
+      const baseSize = Math.sqrt(area) / 20;
+      return Math.max(6, Math.min(10, baseSize)) + 'px';
+    })
+    .style('fill', 'white')
+    .style('font-weight', 'bold')
+    .style('pointer-events', 'none')
+    .style('text-shadow', '1px 1px 2px rgba(0,0,0,0.7)')
+    .text(d => {
+      const rectWidth = d.x1 - d.x0;
+      const rectHeight = d.y1 - d.y0;
+
+      if (rectWidth > 80 && rectHeight > 35) {
+        const shortNames = {
+          "Tanger-Tétouan-Al Hoceïma": "Tanger",
+          "Oriental": "Oriental",
+          "Fès-Meknès": "Fès-Meknès",
+          "Rabat-Salé-Kénitra": "Rabat",
+          "Béni Mellal-Khénifra": "Béni Mellal",
+          "Casablanca-Settat": "Casablanca",
+          "Marrakech-Safi": "Marrakech",
+          "Drâa-Tafilalet": "Drâa-Tafilalet",
+          "Souss-Massa": "Souss-Massa",
+          "Guelmim-Oued Noun": "Guelmim",
+          "Laâyoune-Sakia El Hamra": "Laâyoune",
+          "Dakhla-Oued Ed-Dahab": "Dakhla"
+        };
+        return shortNames[d.data.name] || d.data.name.substring(0, 10);
+      }
+      return '';
+    });
+
+  // Titre du treemap
+  treemapSvg.append('text')
+    .attr('x', width / 2)
+    .attr('y', 15)
+    .attr('text-anchor', 'middle')
+    .style('font-weight', 'bold')
+    .style('font-size', '14px')
+    .style('fill', '#2c3e50')
+    .text('Répartition des Hôpitaux par Région');
+
+  // Légende interactive
+  const legendData = Object.entries(regionCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const legend = treemapSvg.append('g')
+    .attr('transform', `translate(10, ${height - 80})`);
+
+  legend.append('text')
+    .attr('y', -5)
+    .style('font-size', '11px')
+    .style('font-weight', 'bold')
+    .style('fill', '#666')
+    .text('Top 5 Régions:');
+
+  legendData.forEach(([region, count], i) => {
+    const legendItem = legend.append('g')
+      .attr('transform', `translate(0, ${i * 15})`);
+
+    legendItem.append('rect')
+      .attr('width', 12)
+      .attr('height', 12)
+      .attr('fill', colorScale(region));
+
+    legendItem.append('text')
+      .attr('x', 18)
+      .attr('y', 10)
+      .style('font-size', '10px')
+      .style('fill', '#666')
+      .text(`${region}: ${count} hôpitaux`);
   });
+}
+
+// Fonction pour mettre en évidence une région sur la carte
+function highlightRegionOnMap(regionName) {
+  console.log(`Région sélectionnée depuis le treemap: ${regionName}`);
+  // Dans une version ultérieure, implémenter la synchronisation avec la carte
+}
+
+// Fonction pour générer le bar chart de résumé
+function updateResumeViz(regionStats) {
+  resumeSvg.html('');
+
+  if (!regionStats || Object.keys(regionStats.categories).length === 0) {
+    resumeSvg.append('text')
+      .attr('x', 200)
+      .attr('y', 300)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', '#6c757d')
+      .text('Aucune région sélectionnée');
+    return;
+  }
+
+  const margin = { top: 20, right: 30, bottom: 40, left: 100 };
+  const chartWidth = 350;
+  const chartHeight = 400;
+  const barHeight = 25;
+  const data = Object.entries(regionStats.categories).map(([cat, count]) => ({ cat, count, fullName: categoryLegend[cat] || cat }));
+
+  const yScale = d3.scaleBand()
+    .domain(data.map(d => d.cat))
+    .range([0, data.length * barHeight])
+    .padding(0.1);
+
+  const xScale = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.count)])
+    .range([0, chartWidth]);
+
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "treemap-tooltip")
+    .style("opacity", 0);
+
+  const g = resumeSvg.append('g')
+    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+  g.append('g')
+    .attr('class', 'bar-axis')
+    .attr('transform', `translate(0, ${yScale.bandwidth() / 2})`)
+    .call(d3.axisLeft(yScale).tickSize(0))
+    .selectAll('text')
+    .style('text-anchor', 'end')
+    .attr('transform', 'rotate(-0)');
+
+  g.append('g')
+    .attr('class', 'bar-axis')
+    .attr('transform', `translate(0, ${yScale.range()[1] + yScale.bandwidth()})`)
+    .call(d3.axisBottom(xScale).ticks(5))
+    .selectAll('text')
+    .style('font-size', '10px');
+
+  g.selectAll('.bar-rect')
+    .data(data)
+    .enter().append('rect')
+    .attr('class', 'bar-rect')
+    .attr('x', 0)
+    .attr('y', d => yScale(d.cat))
+    .attr('width', d => xScale(d.count))
+    .attr('height', yScale.bandwidth())
+    .attr('fill', d => categoryColors[d.cat] || '#ccc')
+    .on('mouseover', function (event, d) {
+      tooltip.style('opacity', 1)
+        .html(`Catégorie: ${d.fullName}<br>Nombre: ${d.count}`)
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 20) + 'px');
+      d3.select(this).style('opacity', 0.7);
+    })
+    .on('mouseout', function () {
+      tooltip.style('opacity', 0);
+      d3.select(this).style('opacity', 1);
+    });
+
+  g.selectAll('.bar-text')
+    .data(data)
+    .enter().append('text')
+    .attr('class', 'bar-text')
+    .attr('x', d => xScale(d.count) + 5)
+    .attr('y', d => yScale(d.cat) + yScale.bandwidth() / 2)
+    .text(d => d.count);
+
+  const legend = resumeSvg.append('g')
+    .attr('transform', `translate(10, 450)`);
+
+  data.forEach((d, i) => {
+    const item = legend.append('g')
+      .attr('class', 'bar-legend-item')
+      .attr('transform', `translate(0, ${i * 15})`);
+
+    item.append('rect')
+      .attr('class', 'bar-legend-color')
+      .attr('width', 12)
+      .attr('height', 12)
+      .attr('fill', categoryColors[d.cat] || '#ccc');
+
+    item.append('text')
+      .attr('x', 20)
+      .attr('y', 10)
+      .text(`${d.cat}: ${d.fullName}`)
+      .style('font-size', '10px');
+  });
+
+  resumeSvg.append('text')
+    .attr('x', 200)
+    .attr('y', 15)
+    .attr('text-anchor', 'middle')
+    .style('font-weight', 'bold')
+    .style('font-size', '12px')
+    .text(`Résumé: ${regionStats.regionName}`);
+}
+
+// Initialisation du SVG de résumé
+function initResumeViz() {
+  updateResumeViz(null);
+}
+
+// Gestion du redimensionnement
+function handleResize() {
+  initTreemap();
+}
+
+window.addEventListener('resize', handleResize);

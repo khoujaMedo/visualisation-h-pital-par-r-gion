@@ -38,31 +38,66 @@
 
     .container {
       display: flex;
-      gap: 30px;
+      flex-direction: column;
+      gap: 20px;
       max-width: 1400px;
       margin: 0 auto;
       background: white;
       border-radius: 15px;
-      padding: 30px;
+      padding: 20px;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
       min-height: 700px;
+    }
+
+    .top-row {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      min-height: 500px;
     }
 
     .map-container {
       flex: 1.2;
       position: relative;
+      max-height: 700px;
+      overflow: hidden;
     }
 
     .info-panel {
       flex: 0.8;
-      min-width: 400px;
+      min-width: 350px;
       background: #f8f9fa;
-      padding: 25px;
+      padding: 20px;
       border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
       border: 1px solid #e9ecef;
       max-height: 700px;
       overflow-y: auto;
+    }
+
+    .bottom-row {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      min-height: 400px;
+    }
+
+    .treemap-container,
+    .resume-viz-container {
+      flex: 1;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e9ecef;
+      max-height: 500px;
+      overflow: auto;
+    }
+
+    .treemap-svg,
+    .resume-svg {
+      width: 100%;
+      height: 350px;
     }
 
     .region {
@@ -110,7 +145,7 @@
     }
 
     .hospital-list {
-      max-height: 350px;
+      max-height: 250px;
       overflow-y: auto;
       margin-top: 20px;
       background: white;
@@ -137,7 +172,8 @@
     h3,
     h4 {
       color: #2c3e50;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+      font-size: 1.1em;
     }
 
     h3 {
@@ -208,6 +244,10 @@
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       margin-top: 20px;
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      max-width: 200px;
     }
 
     .legend-item {
@@ -223,6 +263,138 @@
       margin-right: 10px;
       border: 2px solid white;
     }
+
+    /* Styles améliorés pour le Treemap */
+    .treemap-container {
+      position: relative;
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .treemap-svg {
+      width: 100%;
+      height: 350px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .treemap-rect {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      stroke: white;
+      stroke-width: 1px;
+    }
+
+    .treemap-rect:hover {
+      filter: brightness(1.1);
+      stroke: #333 !important;
+      stroke-width: 2px !important;
+    }
+
+    .treemap-rect.highlighted {
+      stroke: #ff6b6b !important;
+      stroke-width: 3px !important;
+      filter: brightness(1.2);
+    }
+
+    .treemap-text {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .treemap-tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      max-width: 200px;
+    }
+
+    .treemap-legend {
+      font-size: 10px;
+      color: #666;
+    }
+
+    /* Styles pour le Bar Chart de Résumé */
+    .bar-rect {
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+
+    .bar-rect:hover {
+      opacity: 0.7;
+    }
+
+    .bar-text {
+      font-size: 0.9em;
+      fill: #333;
+      text-anchor: end;
+      dominant-baseline: middle;
+    }
+
+    .bar-axis {
+      font-size: 0.8em;
+      fill: #666;
+    }
+
+    .bar-legend-item {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+      font-size: 0.8em;
+    }
+
+    .bar-legend-color {
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+    }
+
+    /* Media Queries pour Responsive */
+    @media (max-width: 1200px) {
+      .top-row {
+        flex-direction: column;
+      }
+
+      .map-container {
+        min-height: 400px;
+      }
+
+      .bottom-row {
+        flex-direction: column;
+      }
+
+      .treemap-svg,
+      .resume-svg {
+        height: 300px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2em;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      .legend {
+        position: static;
+        margin-top: 10px;
+      }
+    }
   </style>
 
   <title>Carte Interactive des Hôpitaux du Maroc</title>
@@ -235,16 +407,28 @@
   </div>
 
   <div class="container">
-    <div class="map-container">
-      <svg></svg>
-    </div>
-    <div class="info-panel">
-      <h2>Informations sur la Région</h2>
-      <div id="region-info">
-        <div class="no-data">
-          <h3>👆 Sélectionnez une région</h3>
-          <p>Cliquez sur une région de la carte pour afficher les détails des établissements hospitaliers</p>
+    <div class="top-row">
+      <div class="map-container">
+        <svg id="map-svg"></svg>
+      </div>
+      <div class="info-panel">
+        <h2>📋 Informations sur la Région</h2>
+        <div id="region-info">
+          <div class="no-data">
+            <h3>👆 Sélectionnez une région</h3>
+            <p>Cliquez sur une région de la carte pour afficher les détails des établissements hospitaliers</p>
+          </div>
         </div>
+      </div>
+    </div>
+    <div class="bottom-row">
+      <div class="treemap-container">
+        <h2>🗺️ Treemap : Répartition Globale</h2>
+        <svg class="treemap-svg" id="treemap-svg"></svg>
+      </div>
+      <div class="resume-viz-container">
+        <h2>📊 Résumé Visuel par Région</h2>
+        <svg class="resume-svg" id="resume-svg"></svg>
       </div>
     </div>
   </div>
