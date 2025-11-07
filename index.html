@@ -395,52 +395,74 @@
         margin-top: 10px;
       }
     }
-
-    /* Styles pour Connected Scatterplot */
+/* Styles pour Connected Scatterplot - VERSION CORRIGÉE */
 .scatterplot-container {
   background: #f8f9fa;
-  padding: 20px;
+  padding: 15px;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
   margin-top: 20px;
-  max-height: 600px;
+  max-height: 500px; /* Réduit la hauteur maximale */
   overflow: auto;
 }
 
 .scatterplot-svg {
   width: 100%;
-  height: 400px;
+  height: 350px; /* Réduit la hauteur du SVG */
   background: white;
   border-radius: 8px;
 }
 
 .scatterplot-controls {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   flex-wrap: wrap;
   background: white;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid #e9ecef;
+  font-size: 0.85em; /* Texte plus petit */
 }
 
 .scatterplot-controls label {
   font-weight: bold;
   color: #2c3e50;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
 
 .scatterplot-controls select {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
   background: white;
   color: #333;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
+
+/* Ajustements pour les petits écrans */
+@media (max-width: 768px) {
+  .scatterplot-container {
+    padding: 10px;
+    max-height: 450px;
+  }
+  
+  .scatterplot-svg {
+    height: 300px;
+  }
+  
+  .scatterplot-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .scatterplot-controls select {
+    width: 200%;
+  }
+}
+
 
 .scatterplot-path {
   fill: none;
@@ -497,113 +519,7 @@
   stroke-dasharray: 3,3;
 }
 
-/* Styles pour Bar Chart Global */
-.barchart-container {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
-  margin-top: 20px;
-  max-height: 600px;
-  overflow: auto;
-}
 
-.barchart-svg {
-  width: 100%;
-  height: 450px;
-  background: white;
-  border-radius: 8px;
-}
-
-.barchart-controls {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-}
-
-.barchart-controls label {
-  font-weight: bold;
-  color: #2c3e50;
-  font-size: 0.9em;
-}
-
-.barchart-controls select,
-.barchart-controls button {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-  color: #333;
-  font-size: 0.9em;
-  cursor: pointer;
-}
-
-.barchart-controls button:hover {
-  background: #f8f9fa;
-}
-
-.barchart-bar {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.barchart-bar:hover {
-  opacity: 0.8;
-  transform: translateY(-2px);
-}
-
-.barchart-bar.highlighted {
-  stroke: #333;
-  stroke-width: 2px;
-  filter: brightness(1.2);
-}
-
-.barchart-label {
-  font-size: 11px;
-  fill: #333;
-  font-weight: bold;
-  pointer-events: none;
-}
-
-.barchart-value {
-  font-size: 10px;
-  fill: white;
-  font-weight: bold;
-  pointer-events: none;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-}
-
-.barchart-tooltip {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 6px;
-  font-size: 12px;
-  pointer-events: none;
-  z-index: 1000;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  max-width: 250px;
-}
-
-.barchart-axis {
-  font-size: 11px;
-  color: #666;
-}
-
-.barchart-title {
-  font-size: 14px;
-  font-weight: bold;
-  fill: #2c3e50;
-  text-anchor: middle;
-}
   </style>
 
   <title>Carte Interactive des Hôpitaux du Maroc</title>
@@ -611,7 +527,7 @@
 
 <body>
   <div class="header">
-    <h1>🏥 Carte des Hôpitaux du Maroc</h1>
+    <h1> Carte des Hôpitaux du Maroc</h1>
     <p>Cliquez sur une région pour voir la répartition des établissements hospitaliers</p>
   </div>
 
@@ -621,10 +537,10 @@
         <svg id="map-svg"></svg>
       </div>
       <div class="info-panel">
-        <h2>📋 Informations sur la Région</h2>
+        <h2> Informations sur la Région</h2>
         <div id="region-info">
           <div class="no-data">
-            <h3>👆 Sélectionnez une région</h3>
+            <h3> Sélectionnez une région</h3>
             <p>Cliquez sur une région de la carte pour afficher les détails des établissements hospitaliers</p>
           </div>
         </div>
@@ -632,17 +548,17 @@
     </div>
     <div class="bottom-row">
       <div class="treemap-container">
-        <h2>🗺️ Treemap : Répartition Globale</h2>
+        <h2> Treemap : Répartition Globale</h2>
         <svg class="treemap-svg" id="treemap-svg"></svg>
       </div>
       <div class="resume-viz-container">
-        <h2>📊 Résumé Visuel par Région</h2>
+        <h2> Résumé Visuel par Région</h2>
         <svg class="resume-svg" id="resume-svg"></svg>
       </div>
     </div>
     <!-- NOUVELLE SECTION : Connected Scatterplot -->
 <div class="scatterplot-container">
-  <h2>📈 Évolution des Types d'Hôpitaux par Région</h2>
+  <h2> Évolution des Types d'Hôpitaux par Région</h2>
   <div class="scatterplot-controls">
     <label for="region-select">Sélectionner une région:</label>
     <select id="region-select">
@@ -655,20 +571,7 @@
   </div>
   <svg class="scatterplot-svg" id="scatterplot-svg"></svg>
 </div>
-<!-- NOUVELLE SECTION : Bar Chart Global -->
-<div class="barchart-container">
-  <h2>📊 Répartition Nationale par Catégorie d'Hôpitaux</h2>
-  <div class="barchart-controls">
-    <label for="sort-select">Trier par:</label>
-    <select id="sort-select">
-      <option value="count">Nombre décroissant</option>
-      <option value="count-asc">Nombre croissant</option>
-      <option value="category">Catégorie</option>
-    </select>
-    <button id="reset-zoom">Réinitialiser le zoom</button>
-  </div>
-  <svg class="barchart-svg" id="barchart-svg"></svg>
-</div>
+
   </div>
   <script src="index.js"></script>
 </body>

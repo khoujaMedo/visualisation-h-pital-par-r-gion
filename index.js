@@ -10,248 +10,14 @@ let scatterplotData = [];
 let allRegions = [];
 let allCategories = [];
 
-// Variables globales pour le bar chart
-let barchartData = [];
 
-// Fonction pour préparer les données du bar chart
-function prepareBarchartData() {
-  const categoryCounts = {};
-  
-  // Compter les hôpitaux par catégorie
-  hospitalData.forEach(hospital => {
-    categoryCounts[hospital.categorie] = (categoryCounts[hospital.categorie] || 0) + 1;
-  });
-  
-  // Préparer les données pour le bar chart
-  barchartData = Object.entries(categoryCounts).map(([category, count]) => ({
-    category: category,
-    count: count,
-    fullName: categoryLegend[category] || category,
-    color: categoryColors[category] || '#ccc',
-    percentage: (count / hospitalData.length * 100).toFixed(1)
-  }));
-}
 
-// Initialisation du Bar Chart Global
-function initBarchart() {
-  prepareBarchartData();
-  
-  // Mettre à jour le sélecteur de tri
-  const sortSelect = d3.select('#sort-select');
-  const resetButton = d3.select('#reset-zoom');
-  
-  // Événements
-  sortSelect.on('change', updateBarchart);
-  resetButton.on('click', resetBarchartZoom);
-  
-  // Initialiser le bar chart
-  updateBarchart();
-}
 
-// Mise à jour du Bar Chart
-function updateBarchart() {
-  const sortType = d3.select('#sort-select').property('value');
-  
-  // Trier les données
-  let sortedData = [...barchartData];
-  
-  switch(sortType) {
-    case 'count':
-      sortedData.sort((a, b) => b.count - a.count);
-      break;
-    case 'count-asc':
-      sortedData.sort((a, b) => a.count - b.count);
-      break;
-    case 'category':
-      sortedData.sort((a, b) => a.category.localeCompare(b.category));
-      break;
-  }
-  
-  // Dimensions
-  const container = d3.select('.barchart-container');
-  const width = container.node().getBoundingClientRect().width - 40;
-  const height = 450;
-  const margin = { top: 60, right: 30, bottom: 80, left: 150 };
-  
-  const svg = d3.select('#barchart-svg')
-    .attr('width', width)
-    .attr('height', height);
-  
-  // Effacer le contenu précédent
-  svg.html('');
-  
-  // Échelles
-  const xScale = d3.scaleLinear()
-    .domain([0, d3.max(sortedData, d => d.count)])
-    .range([margin.left, width - margin.right])
-    .nice();
-  
-  const yScale = d3.scaleBand()
-    .domain(sortedData.map(d => d.category))
-    .range([margin.top, height - margin.bottom])
-    .padding(0.2);
-  
-  // Lignes de grille
-  const xGrid = d3.axisBottom(xScale)
-    .ticks(8)
-    .tickSize(-height + margin.top + margin.bottom)
-    .tickFormat('');
-  
-  svg.append('g')
-    .attr('class', 'grid-line')
-    .attr('transform', `translate(0,${height - margin.bottom})`)
-    .call(xGrid);
-  
-  // Axes
-  const xAxis = d3.axisBottom(xScale)
-    .ticks(8);
-  
-  const yAxis = d3.axisLeft(yScale)
-    .tickFormat(d => categoryLegend[d] || d);
-  
-  svg.append('g')
-    .attr('class', 'barchart-axis')
-    .attr('transform', `translate(0,${height - margin.bottom})`)
-    .call(xAxis);
-  
-  svg.append('g')
-    .attr('class', 'barchart-axis')
-    .attr('transform', `translate(${margin.left},0)`)
-    .call(yAxis);
-  
-  // Labels des axes
-  svg.append('text')
-    .attr('class', 'axis-label')
-    .attr('x', width / 2)
-    .attr('y', height - 20)
-    .attr('text-anchor', 'middle')
-    .text('Nombre d\'établissements');
-  
-  svg.append('text')
-    .attr('class', 'axis-label')
-    .attr('transform', 'rotate(-90)')
-    .attr('x', -height / 2)
-    .attr('y', 20)
-    .attr('text-anchor', 'middle')
-    .text('Catégories d\'hôpitaux');
-  
-  // Tooltip
-  const tooltip = d3.select("body").append("div")
-    .attr("class", "barchart-tooltip")
-    .style("opacity", 0);
-  
-  // Barres
-  const bars = svg.selectAll('.barchart-bar')
-    .data(sortedData)
-    .enter().append('rect')
-    .attr('class', 'barchart-bar')
-    .attr('x', margin.left)
-    .attr('y', d => yScale(d.category))
-    .attr('width', d => xScale(d.count) - margin.left)
-    .attr('height', yScale.bandwidth())
-    .attr('fill', d => d.color)
-    .attr('rx', 3) // Coins arrondis
-    .on('mouseover', function(event, d) {
-      tooltip.style('opacity', 1)
-        .html(`
-          <strong>${d.fullName}</strong><br>
-          Code: ${d.category}<br>
-          Nombre: ${d.count} établissements<br>
-          Pourcentage: ${d.percentage}% du total
-        `)
-        .style('left', (event.pageX + 15) + 'px')
-        .style('top', (event.pageY - 15) + 'px');
-      
-      d3.select(this)
-        .classed('highlighted', true);
-    })
-    .on('mouseout', function() {
-      tooltip.style('opacity', 0);
-      d3.select(this)
-        .classed('highlighted', false);
-    })
-    .on('click', function(event, d) {
-      // Filtrer les données pour cette catégorie
-      filterByCategory(d.category);
-    });
-  
-  // Labels des valeurs sur les barres
-  svg.selectAll('.barchart-value')
-    .data(sortedData)
-    .enter().append('text')
-    .attr('class', 'barchart-value')
-    .attr('x', d => xScale(d.count) - 5)
-    .attr('y', d => yScale(d.category) + yScale.bandwidth() / 2)
-    .attr('text-anchor', 'end')
-    .attr('dy', '0.35em')
-    .text(d => d.count)
-    .style('opacity', d => (xScale(d.count) - margin.left > 40) ? 1 : 0);
-  
-  // Labels des pourcentages
-  svg.selectAll('.barchart-percentage')
-    .data(sortedData)
-    .enter().append('text')
-    .attr('class', 'barchart-value')
-    .attr('x', d => xScale(d.count) - 5)
-    .attr('y', d => yScale(d.category) + yScale.bandwidth() / 2 + 12)
-    .attr('text-anchor', 'end')
-    .attr('dy', '0.35em')
-    .style('font-size', '9px')
-    .style('opacity', 0.8)
-    .text(d => `${d.percentage}%`)
-    .style('opacity', d => (xScale(d.count) - margin.left > 60) ? 1 : 0);
-  
-  // Titre
-  svg.append('text')
-    .attr('class', 'barchart-title')
-    .attr('x', width / 2)
-    .attr('y', 30)
-    .text(`Répartition des ${hospitalData.length} Établissements Hospitaliers au Maroc`);
-  
-  // Légende des statistiques globales
-  const totalHospitals = hospitalData.length;
-  const totalCategories = barchartData.length;
-  
-  const statsText = svg.append('text')
-    .attr('x', width / 2)
-    .attr('y', 50)
-    .attr('text-anchor', 'middle')
-    .style('font-size', '12px')
-    .style('fill', '#666')
-    .text(`Total: ${totalHospitals} hôpitaux • ${totalCategories} catégories différentes`);
-}
 
-// Fonction pour filtrer par catégorie
-function filterByCategory(category) {
-  // Mettre à jour le sélecteur de catégorie dans le scatterplot
-  d3.select('#category-select').property('value', category);
-  
-  // Mettre à jour le scatterplot
-  updateScatterplot();
-  
-  // Afficher un message dans le panel d'information
-  const infoPanel = d3.select('#region-info');
-  infoPanel.html(`
-    <div class="no-data">
-      <h3>🔍 Filtrage par Catégorie</h3>
-      <p>Catégorie sélectionnée: <strong>${categoryLegend[category] || category}</strong></p>
-      <p>Consultez le scatterplot pour voir l'évolution de cette catégorie par région.</p>
-      <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 6px;">
-        <strong>Hôpitaux de cette catégorie:</strong><br>
-        ${hospitalData.filter(h => h.categorie === category).map(h => 
-          `• ${h.etablissement} (${h.region})`
-        ).join('<br>')}
-      </div>
-    </div>
-  `);
-}
 
-// Fonction pour réinitialiser le zoom
-function resetBarchartZoom() {
-  updateBarchart();
-}
 
 // Fonction pour préparer les données du scatterplot
+// Fonction pour préparer les données du scatterplot - VERSION AMÉLIORÉE
 function prepareScatterplotData() {
   // Simuler des données temporelles (années fictives pour la démonstration)
   const years = [2018, 2019, 2020, 2021, 2022];
@@ -272,7 +38,7 @@ function prepareScatterplotData() {
     }
   });
 
-  // Générer des données simulées pour la démonstration
+  // Générer des données simulées plus réalistes
   allRegions.forEach(region => {
     allCategories.forEach(category => {
       const regionHospitals = hospitalData.filter(h => h.region === region && h.categorie === category);
@@ -280,8 +46,9 @@ function prepareScatterplotData() {
       
       if (baseCount > 0) {
         const series = years.map((year, index) => {
-          // Simulation d'une croissance/évolution
-          const count = Math.max(0, baseCount + Math.floor(Math.random() * 3) - 1 + index);
+          // Simulation d'une croissance/évolution plus réaliste
+          const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, ou +1
+          const count = Math.max(1, baseCount + variation + index); // Minimum 1 établissement
           return {
             year: year,
             count: count,
@@ -335,6 +102,7 @@ function initScatterplot() {
 }
 
 // Mise à jour du Connected Scatterplot
+// Mise à jour du Connected Scatterplot - VERSION CORRIGÉE
 function updateScatterplot() {
   const selectedRegion = d3.select('#region-select').property('value');
   const selectedCategory = d3.select('#category-select').property('value');
@@ -350,11 +118,11 @@ function updateScatterplot() {
     filteredData = filteredData.filter(d => d.category === selectedCategory);
   }
   
-  // Dimensions
+  // Dimensions réduites
   const container = d3.select('.scatterplot-container');
   const width = container.node().getBoundingClientRect().width - 40;
-  const height = 400;
-  const margin = { top: 40, right: 80, bottom: 60, left: 80 };
+  const height = 350; // Hauteur réduite
+  const margin = { top: 40, right: 100, bottom: 50, left: 70 }; // Marges ajustées
   
   const svg = d3.select('#scatterplot-svg')
     .attr('width', width)
@@ -363,13 +131,29 @@ function updateScatterplot() {
   // Effacer le contenu précédent
   svg.html('');
   
-  // Échelles
+  if (filteredData.length === 0) {
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', height / 2)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', '#6c757d')
+      .text('Aucune donnée disponible pour les filtres sélectionnés');
+    return;
+  }
+  
+  // Échelles avec domaine correct
   const xScale = d3.scaleLinear()
     .domain(d3.extent(scatterplotData.flatMap(d => d.series).map(d => d.year)))
-    .range([margin.left, width - margin.right]);
+    .range([margin.left, width - margin.right])
+    .nice();
+  
+  // CORRECTION : Utiliser les données filtrées pour l'échelle Y
+  const allCounts = filteredData.flatMap(d => d.series.map(s => s.count));
+  const yMax = d3.max(allCounts) || 1; // Éviter 0 comme maximum
   
   const yScale = d3.scaleLinear()
-    .domain([0, d3.max(scatterplotData.flatMap(d => d.series).map(d => d.count)) * 1.1])
+    .domain([0, yMax * 1.1]) // Ajouter un peu d'espace en haut
     .range([height - margin.bottom, margin.top]);
   
   // Lignes de grille
@@ -379,7 +163,7 @@ function updateScatterplot() {
     .tickFormat('');
   
   const yGrid = d3.axisLeft(yScale)
-    .ticks(6)
+    .ticks(Math.min(6, yMax)) // Adapter le nombre de ticks au maximum
     .tickSize(-width + margin.left + margin.right)
     .tickFormat('');
   
@@ -393,19 +177,23 @@ function updateScatterplot() {
     .attr('transform', `translate(${margin.left},0)`)
     .call(yGrid);
   
-  // Axes
+  // Axes avec ticks adaptés
   const xAxis = d3.axisBottom(xScale)
     .ticks(5)
     .tickFormat(d => d);
   
+  // CORRECTION : Afficher des nombres entiers sur l'axe Y
   const yAxis = d3.axisLeft(yScale)
-    .ticks(6);
+    .ticks(Math.min(6, yMax))
+    .tickFormat(d => Number.isInteger(d) ? d : ''); // Afficher seulement les entiers
   
   svg.append('g')
+    .attr('class', 'barchart-axis')
     .attr('transform', `translate(0,${height - margin.bottom})`)
     .call(xAxis);
   
   svg.append('g')
+    .attr('class', 'barchart-axis')
     .attr('transform', `translate(${margin.left},0)`)
     .call(yAxis);
   
@@ -413,16 +201,18 @@ function updateScatterplot() {
   svg.append('text')
     .attr('class', 'axis-label')
     .attr('x', width / 2)
-    .attr('y', height - 10)
+    .attr('y', height - 15)
     .attr('text-anchor', 'middle')
+    .style('font-size', '11px')
     .text('Année');
   
   svg.append('text')
     .attr('class', 'axis-label')
     .attr('transform', 'rotate(-90)')
     .attr('x', -height / 2)
-    .attr('y', 20)
+    .attr('y', 15)
     .attr('text-anchor', 'middle')
+    .style('font-size', '11px')
     .text('Nombre d\'établissements');
   
   // Tooltip
@@ -443,9 +233,19 @@ function updateScatterplot() {
     .attr('d', d => line(d.series))
     .attr('stroke', d => d.color)
     .attr('stroke-width', 2)
-    .style('opacity', 0.7);
+    .style('opacity', 0.8)
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .style('stroke-width', 3)
+        .style('opacity', 1);
+    })
+    .on('mouseout', function(event, d) {
+      d3.select(this)
+        .style('stroke-width', 2)
+        .style('opacity', 0.8);
+    });
   
-  // Points de données
+  // Points de données - taille réduite
   const points = svg.selectAll('.scatterplot-point-group')
     .data(filteredData)
     .enter().append('g')
@@ -457,71 +257,84 @@ function updateScatterplot() {
     .attr('class', 'scatterplot-point')
     .attr('cx', d => xScale(d.year))
     .attr('cy', d => yScale(d.count))
-    .attr('r', 4)
+    .attr('r', 3) // Points plus petits
     .attr('fill', d => d.color)
     .attr('stroke', 'white')
-    .attr('stroke-width', 2)
+    .attr('stroke-width', 1.5)
     .on('mouseover', function(event, d) {
       tooltip.style('opacity', 1)
         .html(`
           <strong>${d.region}</strong><br>
           Catégorie: ${categoryLegend[d.category] || d.category}<br>
           Année: ${d.year}<br>
-          Nombre: ${d.count} établissements
+          Nombre: ${d.count} établissement${d.count > 1 ? 's' : ''}
         `)
-        .style('left', (event.pageX + 15) + 'px')
+        .style('left', (event.pageX + 10) + 'px')
         .style('top', (event.pageY - 15) + 'px');
       
       d3.select(this)
-        .attr('r', 6)
-        .style('stroke-width', 3);
+        .attr('r', 4.5) // Légère augmentation au survol
+        .style('stroke-width', 2);
     })
     .on('mouseout', function() {
       tooltip.style('opacity', 0);
       d3.select(this)
-        .attr('r', 4)
-        .style('stroke-width', 2);
+        .attr('r', 3)
+        .style('stroke-width', 1.5);
     });
   
-  // Légende
+  // Légende compacte
   const legendData = [...new Set(filteredData.map(d => d.category))];
   const legend = svg.append('g')
-    .attr('transform', `translate(${width - margin.right + 10}, ${margin.top})`);
+    .attr('transform', `translate(${width - margin.right + 5}, ${margin.top})`);
   
   legend.append('text')
-    .attr('y', -10)
-    .style('font-size', '12px')
+    .attr('y', -5)
+    .style('font-size', '10px')
     .style('font-weight', 'bold')
+    .style('fill', '#666')
     .text('Catégories:');
   
   legend.selectAll('.legend-item')
     .data(legendData)
     .enter().append('g')
     .attr('class', 'legend-item')
-    .attr('transform', (d, i) => `translate(0, ${i * 20})`)
+    .attr('transform', (d, i) => `translate(0, ${i * 16})`) // Espacement réduit
     .each(function(category) {
       const item = d3.select(this);
       
       item.append('rect')
-        .attr('width', 12)
-        .attr('height', 12)
+        .attr('width', 10)
+        .attr('height', 10)
         .attr('fill', categoryColors[category] || '#ccc');
       
       item.append('text')
-        .attr('x', 18)
-        .attr('y', 10)
-        .style('font-size', '10px')
-        .text(categoryLegend[category] || category);
+        .attr('x', 15)
+        .attr('y', 9)
+        .style('font-size', '9px')
+        .style('fill', '#666')
+        .text(category); // Afficher seulement le code de catégorie
     });
   
-  // Titre
+  // Titre plus petit
   svg.append('text')
     .attr('x', width / 2)
     .attr('y', 20)
     .attr('text-anchor', 'middle')
     .style('font-weight', 'bold')
-    .style('font-size', '14px')
+    .style('font-size', '12px')
     .text('Évolution des Établissements Hospitaliers');
+  
+  // Statistiques résumées
+  if (filteredData.length > 0) {
+    const totalPoints = filteredData.reduce((sum, d) => sum + d.series.length, 0);
+    const statsText = svg.append('text')
+      .attr('x', margin.left)
+      .attr('y', 20)
+      .style('font-size', '10px')
+      .style('fill', '#666')
+      .text(`${filteredData.length} série${filteredData.length > 1 ? 's' : ''} • ${totalPoints} point${totalPoints > 1 ? 's' : ''}`);
+  }
 }
 
 // Appeler l'initialisation dans la fonction principale
@@ -532,16 +345,10 @@ d3.csv('hospitals.csv').then(data => {
   initMap();
   initTreemap();
   initResumeViz();
-  initScatterplot();
-  initBarchart(); // AJOUTER CETTE LIGNE
+  initScatterplot(); // AJOUTER CETTE LIGNE
 }).catch(error => {
   console.error('Erreur chargement CSV:', error);
-  d3.select('#region-info').html(`
-    <div class="no-data">
-      <h3>❌ Erreur de chargement CSV</h3>
-      <p>Vérifiez que hospitals.csv est présent.</p>
-    </div>
-  `);
+  // ... gestion d'erreur existante
 });
 
 
@@ -558,7 +365,7 @@ d3.csv('hospitals.csv').then(data => {
   console.error('Erreur chargement CSV:', error);
   d3.select('#region-info').html(`
     <div class="no-data">
-      <h3>❌ Erreur de chargement CSV</h3>
+      <h3> Erreur de chargement CSV</h3>
       <p>Vérifiez que hospitals.csv est présent.</p>
     </div>
   `);
@@ -693,7 +500,7 @@ function showRegionInfo(regionName, regionStats) {
     infoPanel.append('div')
       .attr('class', 'no-data')
       .html(`
-        <h3>❌ Aucune donnée disponible</h3>
+        <h3> Aucune donnée disponible</h3>
         <p>Pour la région: <strong>${regionName}</strong></p>
         <div class="debug-info">
           <strong>Information technique:</strong><br>
@@ -850,7 +657,7 @@ function initMap() {
       console.error('Erreur lors du chargement de la carte:', error);
       d3.select('#region-info').html(`
         <div class="no-data">
-          <h3>❌ Erreur de chargement</h3>
+          <h3> Erreur de chargement</h3>
           <p>Impossible de charger la carte. Vérifiez votre connexion internet.</p>
         </div>
       `);
